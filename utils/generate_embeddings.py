@@ -4,9 +4,12 @@ import numpy as np
 import pickle
 import argparse
 import re
+import os
 
 """
 Convert pretrained GloVe embeddings into npy file
+
+python utils/generate_embeddings.py -d ./data/embeddings/glove.6B.300d.txt --npy_output ./data/dumps/embeddings.npy --dict_output ./data/dumps/vocab.pckl --dict_whitelist ./data/embeddings/vocab.txt
 """
 
 def parse_args():
@@ -21,6 +24,12 @@ def parse_args():
 
 def main():
     args = parse_args()
+
+    if not os.path.exists(args.dict_whitelist):
+        all_files = ['./data/train/english/Wikipedia_Train.tsv',
+                './data/train/english/Wikipedia_Dev.tsv',
+                './data/test/english/Wikipedia_Test.tsv']
+        utils.generate_vocab(all_files)
 
     # reserve 0 for unknown words
     data = {
