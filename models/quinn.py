@@ -72,17 +72,15 @@ class Quinn(object):
         # shape of s: [batch_size, seq_length]
         s = tf.squeeze(tf.tanh(tf.tensordot(att_input, w, axes=1) + b))
         
-        # Attention mask for annotator defined context
-        s = self.masked_attention(s)
-        
-        alpha = tf.nn.softmax(s, name='alpha')
+        # Attention mask for annotator defined context        
+        alpha = self.masked_attention(tf.nn.softmax(s, name='alpha'))
         
         # output shape: [batch_size, hidden_layers]
         out = tf.reduce_sum(att_input * tf.expand_dims(alpha, -1), 1)
         
         return out
     
-    def masked_attention(self, s, epsilon=1e-5):
+    def masked_attention(self, alpha, epsilon=1e-5):
         mask = epsilon * tf.cast(tf.equal(self.attention_map,
                                           tf.zeros_like(self.attention_map)), dtype=tf.float32)
-        return tf.multiply(mask, s)
+        return tf.multiply(mask, alpha)
