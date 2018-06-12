@@ -15,6 +15,7 @@ N. Gillin, [Sensible at SemEval-2016 Task 11: Neural Nonsense Mangled in Ensembl
 ### Sources
 
 Embeddings helper: [rampage644/qrnn](https://github.com/rampage644/qrnn)
+Miscellaneous: [dennybritz/cnn-text-classification-tf/](https://github.com/dennybritz/cnn-text-classification-tf/)
 
 ---
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
