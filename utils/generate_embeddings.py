@@ -8,8 +8,6 @@ import os
 
 """
 Convert pretrained GloVe embeddings into npy file
-
-python utils/generate_embeddings.py -d ./data/embeddings/glove.6B.300d.txt --npy_output ./data/dumps/embeddings.npy --dict_output ./data/dumps/vocab.pckl --dict_whitelist ./data/embeddings/vocab.txt
 """
 
 def parse_args():

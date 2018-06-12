@@ -11,15 +11,16 @@ class Quinn(object):
         max_length: maximum sequence length
         vocab_size: size of vocabulary
         embedding_dims: embedding dimension
-        l2_reg_lambda: L2 regularization strength
+        l2_reg_lambda: (not added into graph) L2 regularization strength
 
-        (NOTE: Add and test effect of regularization)
         """
+        
+        print ("Loading model ...")
 
         # Placeholders for input, output and dropout
         self.input_x = tf.placeholder(tf.int32, [None, max_length], name='input_x')
         self.input_y = tf.placeholder(tf.float32, [None], name='input_y')
-        self.seq_length = tf.placeholder(tf.int32, [None], name='seq_length')
+        self.attention_map = tf.placeholder(tf.int32, [None, max_length], name='attention_map')
         self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')
 
         # Keeping track of l2 regularization loss (optional)
@@ -36,12 +37,11 @@ class Quinn(object):
                 self.embedded_sentence = tf.nn.embedding_lookup(self.word_embedding, self.input_x)
         
         # Bidirectional-GRU Units
-        with tf.name_scope('bi_directional_gru'):
+        with tf.name_scope('bi-directional-gru'):
             self.out, out_states = tf.nn.bidirectional_dynamic_rnn(
                                         tf.contrib.rnn.GRUCell(hidden_layers), 
                                         tf.contrib.rnn.GRUCell(hidden_layers),
-                                        inputs=self.embedded_sentence, 
-                                        sequence_length=self.seq_length,
+                                        inputs=self.embedded_sentence,
                                         dtype=tf.float32)
         
         with tf.name_scope('soft_attention'):
@@ -50,20 +50,20 @@ class Quinn(object):
         with tf.name_scope('output'):
             w = tf.Variable(tf.truncated_normal([hidden_layers * 2, 1], stddev=0.1), name='weight')
             b = tf.Variable(tf.constant(0., shape=[1]), name='bias')
-            self.scores = tf.reshape(tf.nn.xw_plus_b(self.out, w, b, name='scores'), shape=[1, -1])
-            print (self.scores)
+            self.out = tf.nn.sigmoid(tf.nn.xw_plus_b(self.out, w, b, name='scores'))
+            self.scores = tf.squeeze(self.out)
             
         # Calculate mean cross-entropy loss
         with tf.name_scope("loss"):
-            losses = tf.nn.softmax_cross_entropy_with_logits(logits=self.scores, labels=self.input_y)
+            losses = tf.losses.mean_squared_error(labels=self.input_y, predictions=self.scores)
             self.loss = tf.reduce_mean(losses) + l2_lambda * l2_loss
 
         # Accuracy
         with tf.name_scope("accuracy"):
-            correct_predictions = tf.equal(tf.sigmoid(self.scores), self.input_y)
+            correct_predictions = tf.equal(tf.cast(tf.greater(self.scores, tf.zeros_like(self.scores)), dtype=tf.float32), 
+                                           tf.cast(tf.greater(self.input_y, tf.zeros_like(self.scores)), dtype=tf.float32))
             self.accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32), name='accuracy')
 
-    # TO DO: Modify attention for annotator defined contexts
     def soft_attention(self, att_input, hidden_layers):
         
         w = tf.Variable(tf.random_normal([hidden_layers, 1], stddev=0.1), name='weight')
@@ -71,8 +71,18 @@ class Quinn(object):
 
         # shape of s: [batch_size, seq_length]
         s = tf.squeeze(tf.tanh(tf.tensordot(att_input, w, axes=1) + b))
+        
+        # Attention mask for annotator defined context
+        s = self.masked_attention(s)
+        
         alpha = tf.nn.softmax(s, name='alpha')
+        
         # output shape: [batch_size, hidden_layers]
         out = tf.reduce_sum(att_input * tf.expand_dims(alpha, -1), 1)
         
         return out
+    
+    def masked_attention(self, s, epsilon=1e-5):
+        mask = epsilon * tf.cast(tf.equal(self.attention_map,
+                                          tf.zeros_like(self.attention_map)), dtype=tf.float32)
+        return tf.multiply(mask, s)

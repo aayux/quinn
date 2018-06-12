@@ -2,6 +2,10 @@
 
 Information available on the [Shared Task (2018) website](http://sites.google.com/view/cwisharedtask2018/).
 
+### About Model
+
+Bi-directional RNN (GRU) with "masked" soft-attention written in TensorFlow. The attention mask is decided from the annotator specified context (see dataset).
+
 ### Steps
 
 - Download the Shared Task dataset from the website.
@@ -12,7 +16,7 @@ Information available on the [Shared Task (2018) website](http://sites.google.co
 
 - Train with `python train.py`
 
-**TO BE DONE:** Custom attention module; Argument parser for train.py; Write test.py with F scores and other relevant evaluation metrics.
+**TO BE DONE:** Argument parser for train.py; Write test.py with F1 scores and other relevant evaluation metrics.
 
 ### References
 

@@ -61,19 +61,18 @@ def zero_pad(sequence, max_len=600):
             if len(sequence) < max_len else np.array(sequence[:max_len])
 
 class Process(object):
-    def __init__(self, line, is_test=False):        
-        target_text = line[4]
+    def __init__(self, line, is_test=False):               
         
         self.tokens = process_line(line[1])
         
-        self.targets = {}
-        target_text = process_line(target_text)
+        self.target = np.zeros(len(self.tokens))
+        target_words = process_line(line[4])
         for idx,_ in enumerate(self.tokens):
-            if self.tokens[idx] in target_text:
-                self.targets[idx] = True
-        self.targets = list(self.targets.keys()).sort()
+            if self.tokens[idx] in target_words:
+                self.target[idx] = 1
 
         self.tokens = zero_pad(map_to_vocab(self.tokens))
+        self.target = zero_pad(map_to_vocab(self.target))
         
         self.label = None
         if not is_test:
@@ -93,26 +92,26 @@ class DataLoader(object):
             self.data.append(Process(line, is_test=self.is_test))
         
         _x = np.array([data.tokens for data in self.data])
-        _x_attend = np.array([data.targets for data in self.data])
+        _x_map = np.array([data.target for data in self.data])
             
         if not self.is_test:
             _y = np.array([data.label[0] for data in self.data])
             _y_prob = np.array([data.label[1] for data in self.data])
 
-        return _x, _x_attend, _y, _y_prob
+        return _x, _x_map, _y, _y_prob
 
-def load(filename):
+def fetch(filename):
     """
-    Load the preprocessed data
+    Fetch the preprocessed data from dump
     """
-    x, x_attend, y, y_prob = pckl.load(open(filename, mode="rb"))
-    return x, x_attend, y, y_prob
+    x, x_map, y, y_prob = pckl.load(open(filename, mode="rb"))
+    return x, x_map, y, y_prob
 
 
 def create_dump(filename, write_filename):
     loader = DataLoader()
-    x, x_attend, y, y_prob = loader.load(filename)
-    pckl.dump((x, x_attend, y, y_prob), open(write_filename, "wb"))
+    x, x_map, y, y_prob = loader.load(filename)
+    pckl.dump((x, x_map, y, y_prob), open(write_filename, "wb"))
     return
 
 def load_embeddings(path, size, dimensions):
