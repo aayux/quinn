@@ -7,6 +7,8 @@ import numpy as np
 import tensorflow as tf
 import utils.data_utils as utils
 
+from models.quinn import Quinn
+
 train_file = './data/dumps/train.pckl'
 val_file = './data/dumps/val.pckl'
 
