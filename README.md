@@ -12,7 +12,7 @@ Information available on the [Shared Task (2018) website](http://sites.google.co
 
 - Train with `python train.py`
 
-*TO BE DONE:* Custom attention module; Argument parser for train.py; Write test.py with F scores and other relevant evaluation metrics.
+**TO BE DONE:** Custom attention module; Argument parser for train.py; Write test.py with F scores and other relevant evaluation metrics.
 
 ### References
 
@@ -25,6 +25,7 @@ N. Gillin, [Sensible at SemEval-2016 Task 11: Neural Nonsense Mangled in Ensembl
 ### Sources
 
 Embeddings helper: [rampage644/qrnn](https://github.com/rampage644/qrnn)
+
 Miscellaneous: [dennybritz/cnn-text-classification-tf/](https://github.com/dennybritz/cnn-text-classification-tf/)
 
 ---
