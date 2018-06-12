@@ -12,15 +12,19 @@ from models.quinn import Quinn
 train_file = './data/dumps/train.pckl'
 val_file = './data/dumps/val.pckl'
 
+# Model Parameters
 max_length = 600
 vocab_size = 3193
 embedding_dims = 300
 hidden_layers = 64
 
+# Training Parameters
 batch_size = 64
 num_epochs = 3
 num_checkpoints = 3
+checkpoint_every = 10
 
+# Prepare and load training and validation data
 if not os.path.exists(train_file):
     print ("Train dump not found. Preparing data ...")
     train_tsv_path = './data/train/english/Wikipedia_Train.tsv'
@@ -31,15 +35,16 @@ if not os.path.exists(val_file):
     val_tsv_path = './data/train/english/Wikipedia_Dev.tsv'
     utils.create_dump(val_tsv_path, val_file)
 
-# Load train data
 print ('Loading dataset from ./data/dumps/ ...')
 x_train, x_train_att, y_train, y_train_prob = utils.load(train_file)
 x_val, x_val_att, y_val, y_val_prob = utils.load(val_file)
 
+
+# Load embeddings
 vocab_size = 3193
 embedding_path = './data/dumps/embeddings.npy'
 embedding = utils.load_embeddings(embedding_path, vocab_size, dimensions=300)
-print ("Embeddings loaded, Vocabulary Size: {:d}. Starting training ...".format(vocab_size))
+print ("Embeddings loaded, Vocabulary Size: {:d}.".format(vocab_size))
 
 np.random.seed(10)
 
@@ -51,7 +56,9 @@ shuff_idx = np.random.permutation(np.arange(len(y_val)))
 x_val, x_val_att, y_val, y_val_prob = \
 x_val[shuff_idx], x_val_att[shuff_idx], y_val[shuff_idx], y_val_prob[shuff_idx]
 
-# Training
+
+print ("Generating graph and starting training ...")
+
 with tf.Graph().as_default():
     
     session_conf = tf.ConfigProto(
@@ -66,7 +73,7 @@ with tf.Graph().as_default():
 
         # Define Training procedure
         global_step = tf.Variable(0, name='global_step', trainable=False)
-        optimizer = tf.train.AdamOptimizer(1e-3)
+        optimizer = tf.train.AdamOptimizer(1e-3, epsilon=1e-5)
         grads_and_vars = optimizer.compute_gradients(quinn.loss)
         train_op = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
 
@@ -131,10 +138,10 @@ with tf.Graph().as_default():
             epoch_step = (int((len(x_train[0]) - 1) / batch_size) + 1)
             
             if current_step % epoch_step == 0:
-                print("\nEvaluation:")
+                print("\nValidation:")
                 val_step(x_val, y_val_prob)
                 print("")
             
-            if current_step % FLAGS.checkpoint_every == 0:
+            if current_step % checkpoint_every == 0:
                 path = saver.save(sess, checkpoint_prefix, global_step=current_step)
                 print("Saved model checkpoint to {}\n".format(path))

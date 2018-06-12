@@ -2,7 +2,17 @@
 
 Information available on the [Shared Task (2018) website](http://sites.google.com/view/cwisharedtask2018/).
 
-Download GloVe dataset from [here](https://nlp.stanford.edu/projects/glove/).
+### Steps
+
+- Download the Shared Task dataset from the website.
+
+- Download GloVe dataset from [here](https://nlp.stanford.edu/projects/glove/) and copy into respective directories.
+
+- Generate embeddings and vocabulary with: `python utils/generate_embeddings.py -d ./data/embeddings/glove.6B.300d.txt --npy_output ./data/dumps/embeddings.npy --dict_output ./data/dumps/vocab.pckl --dict_whitelist ./data/embeddings/vocab.txt`
+
+- Train with `python train.py`
+
+*TO BE DONE:* Custom attention module; Argument parser for train.py; Write test.py with F scores and other relevant evaluation metrics.
 
 ### References
 

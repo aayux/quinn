@@ -6,15 +6,15 @@ class Quinn(object):
         """
         Constructor, Quinn (CWI-NN) Model
         
-        Args:
-            max_length: ...
-            num_classes: ...
-            vocab_size: ...
-            embedding_dims: ...
-            l2_reg_lambda: ...
+        Args
+        ----
+        max_length: maximum sequence length
+        vocab_size: size of vocabulary
+        embedding_dims: embedding dimension
+        l2_reg_lambda: L2 regularization strength
+
+        (NOTE: Add and test effect of regularization)
         """
-        
-        print ("Initialising placeholders ...")
 
         # Placeholders for input, output and dropout
         self.input_x = tf.placeholder(tf.int32, [None, max_length], name='input_x')
@@ -36,7 +36,7 @@ class Quinn(object):
                 self.embedded_sentence = tf.nn.embedding_lookup(self.word_embedding, self.input_x)
         
         # Bidirectional-GRU Units
-        with tf.name_scope('bi-directional-gru'):
+        with tf.name_scope('bi_directional_gru'):
             self.out, out_states = tf.nn.bidirectional_dynamic_rnn(
                                         tf.contrib.rnn.GRUCell(hidden_layers), 
                                         tf.contrib.rnn.GRUCell(hidden_layers),
@@ -44,13 +44,15 @@ class Quinn(object):
                                         sequence_length=self.seq_length,
                                         dtype=tf.float32)
         
-        # TO DO: Attention Module here
+        with tf.name_scope('soft_attention'):
+            self.out = self.soft_attention(tf.concat(self.out, axis=2), hidden_layers * 2)
         
         with tf.name_scope('output'):
-            w = tf.Variable(tf.truncated_normal([..., 1], stddev=0.1), name='weight')
+            w = tf.Variable(tf.truncated_normal([hidden_layers * 2, 1], stddev=0.1), name='weight')
             b = tf.Variable(tf.constant(0., shape=[1]), name='bias')
-            self.scores = tf.nn.xw_plus_b(self.out, w, b, name='scores')
-        
+            self.scores = tf.reshape(tf.nn.xw_plus_b(self.out, w, b, name='scores'), shape=[1, -1])
+            print (self.scores)
+            
         # Calculate mean cross-entropy loss
         with tf.name_scope("loss"):
             losses = tf.nn.softmax_cross_entropy_with_logits(logits=self.scores, labels=self.input_y)
@@ -60,4 +62,17 @@ class Quinn(object):
         with tf.name_scope("accuracy"):
             correct_predictions = tf.equal(tf.sigmoid(self.scores), self.input_y)
             self.accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32), name='accuracy')
+
+    # TO DO: Modify attention for annotator defined contexts
+    def soft_attention(self, att_input, hidden_layers):
         
+        w = tf.Variable(tf.random_normal([hidden_layers, 1], stddev=0.1), name='weight')
+        b = tf.Variable(tf.random_normal([1], stddev=0.1), name='bias')
+
+        # shape of s: [batch_size, seq_length]
+        s = tf.squeeze(tf.tanh(tf.tensordot(att_input, w, axes=1) + b))
+        alpha = tf.nn.softmax(s, name='alpha')
+        # output shape: [batch_size, hidden_layers]
+        out = tf.reduce_sum(att_input * tf.expand_dims(alpha, -1), 1)
+        
+        return out
