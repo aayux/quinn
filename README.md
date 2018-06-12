@@ -1,6 +1,6 @@
 # Quinn: Complex Word Identification using Neural Networks (CWI-NN)
 
-Information available at the [Shared Task (2018) website](http://sites.google.com/view/cwisharedtask2018/).
+Information available on the [Shared Task (2018) website](http://sites.google.com/view/cwisharedtask2018/).
 
 Download GloVe dataset from [here](https://nlp.stanford.edu/projects/glove/).
 
