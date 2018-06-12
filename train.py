@@ -90,7 +90,7 @@ with tf.Graph().as_default():
         # Initialize all variables
         sess.run(tf.global_variables_initializer())
 
-        # sess.run(quinn.embedding_init, feed_dict={quinn.embedding_placeholder: embedding})
+        sess.run(quinn.embedding_init, feed_dict={quinn.embedding_placeholder: embedding})
 
         def train_step(x_batch, x_map, y_batch):
             # seq_length = np.array([list(x).index(0) + 1 for x in x_batch])
@@ -98,12 +98,10 @@ with tf.Graph().as_default():
             feed_dict = {
                 quinn.input_x: x_batch,
                 quinn.input_y: y_batch,
-                quinn.attention_map: x_map,
-                quinn.embedding_placeholder: embedding,
-                quinn.keep_prob: 1.0
+                quinn.attention_map: x_map
             }
-            _, _embedding_op, step, loss, accuracy = sess.run(
-                [train_op, quinn.embedding_init, global_step, quinn.loss, quinn.accuracy],
+            _, step, loss, accuracy = sess.run(
+                [train_op, global_step, quinn.loss, quinn.accuracy],
                 feed_dict)
             
             time_str = datetime.datetime.now().isoformat()
@@ -113,12 +111,10 @@ with tf.Graph().as_default():
             feed_dict = {
                 quinn.input_x: x_batch,
                 quinn.input_y: y_batch,
-                quinn.attention_map: x_map,
-                quinn.embedding_placeholder: embedding,
-                quinn.dropout_keep_prob: 1.0
+                quinn.attention_map: x_map
             }
-            _embedding_op, step, loss, accuracy = sess.run(
-                [quinn.embedding_init, global_step, quinn.loss, quinn.accuracy],
+            step, loss, accuracy = sess.run(
+                [global_step, quinn.loss, quinn.accuracy],
                 feed_dict)
             
             time_str = datetime.datetime.now().isoformat()
@@ -136,10 +132,10 @@ with tf.Graph().as_default():
             epoch_step = (int((len(x_train[0]) - 1) / batch_size) + 1)
             
             if current_step % epoch_step == 0:
-                print("\nEvaluation:")
+                print("\nValidation:")
                 
                 # Randomly draw a validation batch
-                shuff_idx = np.random.permutation(np.arange(len(batch_size)))
+                shuff_idx = np.random.permutation(np.arange(batch_size))
                 x_batch_val, x_batch_val_map, y_batch_val_prob = \
                 x_val[shuff_idx], x_val_map[shuff_idx], y_val_prob[shuff_idx]
                 
