@@ -53,12 +53,12 @@ class Quinn(object):
             self.scores = tf.squeeze(self.out, name='scores')
             
         # Calculate mean cross-entropy loss
-        with tf.name_scope("loss"):
+        with tf.name_scope('loss'):
             losses = tf.losses.mean_squared_error(labels=self.input_y, predictions=self.scores)
             self.loss = tf.reduce_mean(losses) + l2_lambda * l2_loss
 
         # Mean Absolute Error
-        with tf.name_scope("mae"):
+        with tf.name_scope('mae'):
             self.mae, self.update_op = tf.metrics.mean_absolute_error(labels=self.input_y, predictions=self.scores)
 
     def soft_attention(self, att_input, hidden_layers):
@@ -78,6 +78,7 @@ class Quinn(object):
         return out
     
     def masked_attention(self, alpha, epsilon=1e-5):
+        # TO DO: Make this mask trainable
         mask = epsilon * tf.cast(tf.equal(self.attention_map,
                                           tf.zeros_like(self.attention_map)), dtype=tf.float32)
         return tf.multiply(mask, alpha)
