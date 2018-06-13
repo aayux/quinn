@@ -49,19 +49,17 @@ class Quinn(object):
         with tf.name_scope('output'):
             w = tf.Variable(tf.truncated_normal([hidden_layers * 2, 1], stddev=0.1), name='weight')
             b = tf.Variable(tf.constant(0., shape=[1]), name='bias')
-            self.out = tf.nn.sigmoid(tf.nn.xw_plus_b(self.out, w, b, name='scores'))
-            self.scores = tf.squeeze(self.out)
+            self.out = tf.nn.sigmoid(tf.nn.xw_plus_b(self.out, w, b))
+            self.scores = tf.squeeze(self.out, name='scores')
             
         # Calculate mean cross-entropy loss
         with tf.name_scope("loss"):
             losses = tf.losses.mean_squared_error(labels=self.input_y, predictions=self.scores)
             self.loss = tf.reduce_mean(losses) + l2_lambda * l2_loss
 
-        # Accuracy
-        with tf.name_scope("accuracy"):
-            correct_predictions = tf.equal(tf.cast(tf.greater(self.scores, tf.zeros_like(self.scores)), dtype=tf.float32), 
-                                           tf.cast(tf.greater(self.input_y, tf.zeros_like(self.scores)), dtype=tf.float32))
-            self.accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32), name='accuracy')
+        # Mean Absolute Error
+        with tf.name_scope("mae"):
+            self.mae, self.update_op = tf.metrics.mean_absolute_error(labels=self.input_y, predictions=self.scores)
 
     def soft_attention(self, att_input, hidden_layers):
         

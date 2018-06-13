@@ -9,7 +9,7 @@ import utils.data_utils as utils
 
 from models.quinn import Quinn
 
-tf.logging.set_verbosity(tf.logging.WARN)
+tf.logging.set_verbosity(tf.logging.ERROR)
 
 train_file = './data/dumps/train.pckl'
 val_file = './data/dumps/val.pckl'
@@ -42,7 +42,6 @@ x_train, x_train_map, y_train, y_train_prob = utils.fetch(train_file)
 x_val, x_val_map, y_val, y_val_prob = utils.fetch(val_file)
 
 # Load embeddings
-vocab_size = 3193
 embedding_path = './data/dumps/embeddings.npy'
 embedding = utils.load_embeddings(embedding_path, vocab_size, dimensions=300)
 print ("Embeddings loaded, Vocabulary Size: {:d}.".format(vocab_size))
@@ -88,7 +87,7 @@ with tf.Graph().as_default():
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=num_checkpoints)
 
         # Initialize all variables
-        sess.run(tf.global_variables_initializer())
+        sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
 
         sess.run(quinn.embedding_init, feed_dict={quinn.embedding_placeholder: embedding})
 
@@ -100,12 +99,12 @@ with tf.Graph().as_default():
                 quinn.input_y: y_batch,
                 quinn.attention_map: x_map
             }
-            _, step, loss, accuracy = sess.run(
-                [train_op, global_step, quinn.loss, quinn.accuracy],
+            _, step, loss, mae, _update_op = sess.run(
+                [train_op, global_step, quinn.loss, quinn.mae, quinn.update_op],
                 feed_dict)
             
             time_str = datetime.datetime.now().isoformat()
-            print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
+            print("{}: step {}, loss {:g}, mae {:g}".format(time_str, step, loss, mae))
 
         def val_step(x_batch, x_map, y_batch):            
             feed_dict = {
@@ -113,12 +112,12 @@ with tf.Graph().as_default():
                 quinn.input_y: y_batch,
                 quinn.attention_map: x_map
             }
-            step, loss, accuracy = sess.run(
-                [global_step, quinn.loss, quinn.accuracy],
+            step, loss, mae, _update_op = sess.run(
+                [global_step, quinn.loss, quinn.mae, quinn.update_op],
                 feed_dict)
             
             time_str = datetime.datetime.now().isoformat()
-            print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
+            print("{}: step {}, loss {:g}, mae {:g}".format(time_str, step, loss, mae))
             
         # Generate batches
         batches = utils.batch_iter(list(zip(x_train, x_train_map, y_train_prob)), batch_size, num_epochs)

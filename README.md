@@ -16,8 +16,6 @@ Bi-directional RNN (GRU) with "masked" soft-attention written in TensorFlow. The
 
 - Train with `python train.py`
 
-**TO BE DONE:** Argument parser for train.py; Write test.py with F1 scores and other relevant evaluation metrics.
-
 ### References
 
 J. Pennington, R. Socher and C. D. Manning, [GloVe: Global Vectors for Word Representation](https://nlp.stanford.edu/pubs/glove.pdf), 2014.

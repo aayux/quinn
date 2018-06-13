@@ -61,8 +61,7 @@ def zero_pad(sequence, max_len=600):
             if len(sequence) < max_len else np.array(sequence[:max_len])
 
 class Process(object):
-    def __init__(self, line, is_test=False):               
-        
+    def __init__(self, line):
         self.tokens = process_line(line[1])
         
         self.target = np.zeros(len(self.tokens))
@@ -74,30 +73,26 @@ class Process(object):
         self.tokens = zero_pad(map_to_vocab(self.tokens))
         self.target = zero_pad(map_to_vocab(self.target))
         
-        self.label = None
-        if not is_test:
-            self.label = [float(line[9]), float(line[10])]
+        self.label = [float(line[9]), float(line[10])]
 
 
 class DataLoader(object):
-    def __init__(self, is_test=False):
+    def __init__(self):
         self.data = []        
-        self.is_test = is_test
 
     def load(self, filename):
         with open(filename) as data_file:
             lines = [line.split('\t') for line in data_file.read().splitlines()]
                         
         for line in lines:
-            self.data.append(Process(line, is_test=self.is_test))
+            self.data.append(Process(line))
         
         _x = np.array([data.tokens for data in self.data])
         _x_map = np.array([data.target for data in self.data])
             
-        if not self.is_test:
-            _y = np.array([data.label[0] for data in self.data])
-            _y_prob = np.array([data.label[1] for data in self.data])
-
+        _y = np.array([data.label[0] for data in self.data])
+        _y_prob = np.array([data.label[1] for data in self.data])
+    
         return _x, _x_map, _y, _y_prob
 
 def fetch(filename):
