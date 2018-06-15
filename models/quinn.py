@@ -11,7 +11,7 @@ class Quinn(object):
         max_length: maximum sequence length
         vocab_size: size of vocabulary
         embedding_dims: embedding dimension
-        l2_reg_lambda: (not added into graph) L2 regularization strength
+        l2_reg_lambda: L2 regularization strength
 
         """
         
@@ -51,7 +51,12 @@ class Quinn(object):
             b = tf.Variable(tf.constant(0., shape=[1]), name='bias')
             self.out = tf.nn.sigmoid(tf.nn.xw_plus_b(self.out, w, b))
             self.scores = tf.squeeze(self.out, name='scores')
-            
+                
+        # L2 Regularizer
+        if l2_lambda > 0.:
+            l2_loss = tf.add_n([tf.nn.l2_loss(var) for var in tf.trainable_variables() if ('weight' in var.name)])
+
+
         # Calculate mean cross-entropy loss
         with tf.name_scope('loss'):
             losses = tf.losses.mean_squared_error(labels=self.input_y, predictions=self.scores)
@@ -81,4 +86,5 @@ class Quinn(object):
         # TO DO: Make this mask trainable
         mask = epsilon * tf.cast(tf.equal(self.attention_map,
                                           tf.zeros_like(self.attention_map)), dtype=tf.float32)
-        return tf.multiply(mask, alpha)
+        multiplier = tf.add(mask, tf.cast(self.attention_map, dtype=tf.float32))
+        return tf.multiply(multiplier, alpha)

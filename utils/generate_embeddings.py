@@ -24,9 +24,9 @@ def main():
     args = parse_args()
 
     if not os.path.exists(args.dict_whitelist):
-        all_files = ['./data/train/english/Wikipedia_Train.tsv',
-                './data/train/english/Wikipedia_Dev.tsv',
-                './data/test/english/Wikipedia_Test.tsv']
+        all_files = ['./data/english/All_Train.tsv',
+                     './data/english/All_Dev.tsv',
+                     './data/english/All_Test.tsv']
         utils.generate_vocab(all_files)
 
     # reserve 0 for unknown words

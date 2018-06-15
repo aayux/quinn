@@ -18,9 +18,10 @@ val_file = './data/dumps/val.pckl'
 max_length = 600
 vocab_size = 3193
 embedding_dims = 300
-hidden_layers = 64
+hidden_layers = 256
 
 # Training Parameters
+l2_lambda = 1e-4
 batch_size = 64
 num_epochs = 100
 num_checkpoints = 3
@@ -29,12 +30,12 @@ checkpoint_every = 10
 # Prepare and load training and validation data
 if not os.path.exists(train_file):
     print ("Train dump not found. Preparing data ...")
-    train_tsv_path = './data/train/english/Wikipedia_Train.tsv'
+    train_tsv_path = './data/english/All_Train.tsv'
     utils.create_dump(train_tsv_path, train_file)
 
 if not os.path.exists(val_file):
     print ("Validation dump not found. Preparing data ...")
-    val_tsv_path = './data/train/english/Wikipedia_Dev.tsv'
+    val_tsv_path = './data/english/All_Dev.tsv'
     utils.create_dump(val_tsv_path, val_file)
 
 print ('Loading dataset from ./data/dumps/ ...')
@@ -66,7 +67,8 @@ with tf.Graph().as_default():
     with sess.as_default():
         quinn = Quinn(max_length=max_length, vocab_size=vocab_size, 
                       embedding_dims=embedding_dims, 
-                      hidden_layers=hidden_layers)
+                      hidden_layers=hidden_layers,
+                      l2_lambda=l2_lambda)
 
         # Define Training procedure
         global_step = tf.Variable(0, name='global_step', trainable=False)

@@ -13,6 +13,7 @@ tf.logging.set_verbosity(tf.logging.WARN)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--ckptdir', type=str, default=None, help='Model checkpoint directory')
+parser.add_argument('--dataset', type=str, default=None, help='TSV test file name')
 parser.add_argument('--bsize', type=int, default=128, help='Test batch size')
 opt = parser.parse_args()
 
@@ -21,7 +22,7 @@ test_file = './data/dumps/test.pckl'
 # Prepare and load test data
 if not os.path.exists(test_file):
     print ("Test dump not found. Preparing data ...")
-    test_tsv_path = './data/test/english/Wikipedia_Test.tsv'
+    test_tsv_path = './data/english/' + opt.dataset + '.tsv'
     utils.create_dump(test_tsv_path, test_file)
 
 print ("Loading dataset from {} ...".format(test_file))

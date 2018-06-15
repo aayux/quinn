@@ -4,7 +4,7 @@ Information available on the [Shared Task (2018) website](http://sites.google.co
 
 ### About Model
 
-Bi-directional RNN (GRU) with "masked" soft-attention written in TensorFlow. The attention mask is decided from the annotator specified context (see dataset).
+Bi-directional RNN (GRU) with "masked" soft-attention written in TensorFlow. The attention mask is decided from annotator specified context (see dataset).
 
 ### Steps
 
@@ -12,9 +12,13 @@ Bi-directional RNN (GRU) with "masked" soft-attention written in TensorFlow. The
 
 - Download GloVe dataset from [here](https://nlp.stanford.edu/projects/glove/) and copy into respective directories.
 
-- Generate embeddings and vocabulary with: `python utils/generate_embeddings.py -d ./data/embeddings/glove.6B.300d.txt --npy_output ./data/dumps/embeddings.npy --dict_output ./data/dumps/vocab.pckl --dict_whitelist ./data/embeddings/vocab.txt`
+- Generate embeddings and vocabulary with 
+
+`python utils/generate_embeddings.py -d ./data/embeddings/glove.6B.300d.txt --npy_output ./data/dumps/embeddings.npy --dict_output ./data/dumps/vocab.pckl --dict_whitelist ./data/embeddings/vocab.txt`
 
 - Train with `python train.py`
+
+- Test with `python test.py --ckptdir=<checkpoint directory> --tsvfile=<test file>`, example: `python test.py --ckptdir=1528996355 --dataset=WikiNews_Test`
 
 ### References
 
